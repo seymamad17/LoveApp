@@ -1,16 +1,16 @@
 @font-face {
     font-family: 'EnFont';
-    src: url('../Fonts/A/Montserrat-Regular.ttf');
+    src: url('Montserrat-Regular.ttf');
 }
 
 @font-face {
     font-family: 'EnFontB';
-    src: url('../Fonts/A/Montserrat-Bold.ttf');
+    src: url('Montserrat-Bold.ttf');
 }
 
 @font-face {
     font-family: 'FiraCode';
-    src: url('../Fonts/FiraCode/FiraCode-Bold.ttf');
+    src: url('FiraCode-Bold.ttf');
 }
 
 *{
