@@ -145,16 +145,16 @@ function applyBackground() {
     if (width <= 721) {
         // --- تنظیمات سایز گوشی ---
         if (bgNumber == 1) {
-            document.body.style.backgroundImage = "url('./img/background/bg1.jpg')"; // پیش‌فرض گوشی
+            document.body.style.backgroundImage = "url('bg1.jpg')"; // پیش‌فرض گوشی
         } else {
-            document.body.style.backgroundImage = "url('./img/background/bg2.jpg')"; // بعد از کلیک
+            document.body.style.backgroundImage = "url('bg2.jpg')"; // بعد از کلیک
         }
     } else {
         // --- تنظیمات سایز کامپیوتر ---
         if (bgNumber == 1) {
-            document.body.style.backgroundImage = "url('./img/background/bgPC2.jpg')"; // پیش‌فرض کامپیوتر
+            document.body.style.backgroundImage = "url('bgPC2.jpg')"; // پیش‌فرض کامپیوتر
         } else {
-            document.body.style.backgroundImage = "url('./img/background/bgPC1.jpg')"; // بعد از کلیک
+            document.body.style.backgroundImage = "url('bgPC1.jpg')"; // بعد از کلیک
         }
     }
 }
