@@ -227,7 +227,7 @@ loginButton.addEventListener('click', function () {
             // اگر ردیفی با این مشخصات پیدا شد
             if (response.data.length > 0) {
                 errorSpan.innerText = 'Login successful!';
-                 window.location.href = 'html/tarikh.html';
+                 window.location.href = 'tarikh.html';
                  
             } else {
                 // اگر مشخصات همخوانی نداشت
