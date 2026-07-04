@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>MyChat</title>
+<style>
+
+@font-face {
+    font-family: 'EnFont';
+    src: url('../../Fonts/A/Montserrat-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'EnFontB';
+    src: url('../../Fonts/A/Montserrat-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'FiraCode';
+    src: url('../../Fonts/FiraCode/FiraCode-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'IranSans';
+    src: url('../../Fonts/Iransans/IRANSansX-Regular.otf');
+    src: url('../../Fonts/Iransans/IRANSansX-Regular.woff');
+} 
+
+:root {
+  --tg-blue: #2AABEE;
+  --tg-dark-blue: #1a8ec4;
+  --tg-bg: #f0f2f5;
+  --tg-white: #f0f2f5;
+  --tg-sent: #effdde;
+  --tg-sent-dark: #4fae4e;
+  --tg-text: #111111;
+  --tg-muted: #8d8d8d;
+  --tg-border: #e0e0e0;
+  --tg-header: #ffffff;
+  --tg-input-bg: #ffffff;
+  --tg-bubble-in: #ffffff;
+  --tg-bubble-out: #effdde;
+  --tg-reply-bg: rgba(0,0,0,0.07);
+  --tg-pin-bg: rgba(255,255,255,0.95);
+  --tg-tick: #4fae4e;
+  --tg-online: #4fae4e;
+  --radius: 18px;
+  --radius-sharp: 4px;
+  --header-h: 60px;
+  --input-h: 60px;
+  --font: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --emoji-font: 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+  --bg-type: 'default';
+  --custom-bg: none;
+  --msg-radius: 18px;
+}
+
+[data-theme="dark"] {
+  --tg-bg: #1c2128;
+  --tg-white: #1e2a37;
+  --tg-text: #e8eaed;
+  --tg-muted: #8a95a0;
+  --tg-border: #2d3a47;
+  --tg-header: #1e2a37;
+  --tg-input-bg: #1e2a37;
+  --tg-bubble-in: #1e2a37;
+  --tg-bubble-out: #2b5278;
+  --tg-sent: #2b5278;
+  --tg-sent-dark: #4e9fcf;
+  --tg-reply-bg: rgba(255,255,255,0.07);
+  --tg-pin-bg: rgba(30,42,55,0.95);
+  --tg-blue: #4ea8d8;
+}
+
+* { 
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  font-family: 'EnFont';
+  user-select: none;
+}
+
+
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-size: 15px;
+}
+
+/* ========== SCREENS ========== */
+.screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.screen.hidden {
+  transform: translateX(100%);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#loginScreen {
+  background: #645ba065;
+  align-items: center;
+  justify-content: center;
+}
+
+#homeScreen { background: var(--tg-white); }
+#chatScreen { 
+  background: var(--tg-bg);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ========== LOGIN ========== */
+.login-logo {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: #4c4386;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  font-family: 'EnFont';
+}
+.login-logo svg {
+  width: 46px;
+  height: 46px;
+}
+.login-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #4c4386;
+  font-family: 'EnFont';
+}
+.login-sub {
+  color: #4c4386;
+  font-size: 14px;
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.5;
+  font-family: 'EnFont';
+}
+.login-form { width: 100%; max-width: 320px; }
+.login-input-wrap {
+  position: relative;
+  margin-bottom: 16px;
+  font-family: 'EnFont';
+}
+.login-input-wrap label {
+  display: block;
+  font-size: 12px;
+  color: #4c4386;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.login-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--tg-border);
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  background: var(--tg-bg);
+  color: #4c4386;
+  transition: border-color 0.2s;
+  font-family: 'EnFont';
+}
+.login-input:focus {
+  border-color: #4c4386;
+}
+.login-input::placeholder{
+  color: #4c4386;
+  font-family: EnFontB;
+  opacity: 0.6;
+  font-family: 'EnFont';
+}
+
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: #7e75bde0;
+  color: #4c4386;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 8px;
+  border: none;
+  outline: none;
+  font-family: 'EnFont';
+}
+.btn-primary:hover { background: #645ba0bd; }
+.btn-primary:active { transform: scale(0.98); background: #645ba0bd; }
+
+/* ========== CONTACTS / HOME ========== */
+.home-header {
+  height: var(--header-h);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 12px;
+  background: var(--tg-header);
+  border-bottom: 0.5px solid var(--tg-border);
+  position: relative; z-index: 10;
+}
+.home-header h1 { font-size: 20px; font-weight: 700; flex: 1; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: none; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--tg-blue); transition: background 0.15s;
+}
+.icon-btn:hover { background: var(--tg-reply-bg); }
+.icon-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.myid-badge {
+  padding: 8px 16px; font-size: 12px;
+  background: var(--tg-bg); color: var(--tg-muted);
+  text-align: center; border-bottom: 0.5px solid var(--tg-border);
+}
+.myid-badge b { color: var(--tg-blue); }
+
+.new-chat-form {
+  padding: 12px 16px; border-bottom: 0.5px solid var(--tg-border);
+  background: var(--tg-bg);
+}
+.new-chat-form .label { font-size: 12px; color: var(--tg-muted); margin-bottom: 6px; }
+.new-chat-row { display: flex; gap: 8px; }
+.new-chat-input {
+  flex: 1; padding: 10px 14px;
+  border: 1.5px solid var(--tg-border);
+  border-radius: 22px; font-size: 14px; outline: none;
+  background: var(--tg-white); color: var(--tg-text);
+  transition: border-color 0.2s;
+}
+.new-chat-input:focus { border-color: var(--tg-blue); }
+.new-chat-btn {
+  padding: 0 18px; background: var(--tg-blue); color: white;
+  border: none; border-radius: 22px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.new-chat-btn:active { background: var(--tg-dark-blue); }
+
+.chat-list { flex: 1; overflow-y: auto; }
+.chat-item {
+  display: flex; align-items: center;
+  padding: 10px 16px; gap: 12px; cursor: pointer;
+  transition: background 0.15s; position: relative;
+}
+.chat-item:hover, .chat-item:active { background: var(--tg-bg); }
+
+
+
+.chat-avatar {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--tg-blue); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; flex-shrink: 0;
+  letter-spacing: -0.5px;
+}
+.chat-info { flex: 1; min-width: 0; }
+.chat-name-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.chat-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.chat-time { font-size: 12px; color: var(--tg-muted); flex-shrink: 0; }
+.chat-preview { font-size: 14px; color: var(--tg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ========== CHAT SCREEN ========== */
+.bg-layer {
+  position: absolute; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+.bg-layer canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.chat-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-header {
+  height: var(--header-h);
+  display: flex; align-items: center;
+  padding: 0 8px 0 8px; gap: 8px;
+  background: var(--tg-header);
+  border-bottom: 0.5px solid var(--tg-border);
+  position: relative; z-index: 10;
+  flex-shrink: 0;
+}
+.chat-peer-info { flex: 1; min-width: 0; cursor: pointer; }
+.chat-peer-name { font-size: 16px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-peer-status { font-size: 12px; color: var(--tg-blue); margin-top: 1px; }
+.chat-peer-status.online { color: var(--tg-online); }
+
+.pin-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 8px 16px; cursor: pointer;
+  background: var(--tg-pin-bg);
+  border-bottom: 0.5px solid var(--tg-border);
+  position: relative; z-index: 9;
+  animation: slideDown 0.2s ease;
+  flex-shrink: 0;
+}
+.pin-bar.visible { display: flex; }
+@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.pin-icon { color: var(--tg-blue); flex-shrink: 0; }
+.pin-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.pin-content { flex: 1; min-width: 0; }
+.pin-label { font-size: 11px; color: var(--tg-blue); font-weight: 600; }
+.pin-text { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--tg-text); }
+.pin-close { color: var(--tg-muted); cursor: pointer; flex-shrink: 0; }
+.pin-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+.messages-area::-webkit-scrollbar { width: 3px; }
+.messages-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+
+.date-divider {
+  text-align: center; margin: 8px 0;
+}
+.date-divider span {
+  background: rgba(0,0,0,0.35); color: white;
+  border-radius: 12px; padding: 4px 10px; font-size: 12px;
+}
+[data-theme="dark"] .date-divider span { background: rgba(255,255,255,0.15); }
+
+.msg-wrapper {
+  display: flex; flex-direction: column;
+  max-width: 72%; position: relative;
+  animation: msgPop 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes msgPop {
+  from { transform: scale(0.85) translateY(6px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.msg-wrapper.out { align-self: flex-end; }
+.msg-wrapper.in { align-self: flex-start; }
+.msg-wrapper.selected .msg-bubble {
+  outline: 2px solid var(--tg-blue);
+  outline-offset: 2px;
+}
+.msg-wrapper.selecting { cursor: pointer; }
+
+.msg-bubble {
+  padding: 7px 12px 4px 12px;
+  border-radius: var(--msg-radius);
+  position: relative;
+  transition: background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  word-break: break-word;
+}
+.msg-wrapper.out .msg-bubble {
+  background: var(--tg-bubble-out);
+  border-bottom-right-radius: var(--radius-sharp);
+}
+.msg-wrapper.in .msg-bubble {
+  background: var(--tg-bubble-in);
+  border-bottom-left-radius: var(--radius-sharp);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.msg-bubble:active { filter: brightness(0.96); }
+.msg-text { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
+.msg-edited { font-size: 11px; color: var(--tg-muted); margin-right: 4px; font-style: italic; }
+
+.reply-preview {
+  border-left: 3px solid var(--tg-blue);
+  padding: 4px 8px; margin-bottom: 6px;
+  border-radius: 0 8px 8px 0;
+  background: var(--tg-reply-bg);
+  cursor: pointer;
+  overflow: hidden;
+}
+.reply-author { font-size: 12px; color: var(--tg-blue); font-weight: 600; margin-bottom: 2px; }
+.reply-text { font-size: 13px; color: var(--tg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+
+.msg-meta {
+  display: flex; align-items: center; gap: 3px;
+  justify-content: flex-end; margin-top: 2px;
+  float: right; margin-left: 8px; padding-top: 2px;
+}
+.msg-time { font-size: 11px; color: var(--tg-muted); }
+.ticks { display: flex; gap: 1px; }
+.tick svg { width: 16px; height: 10px; stroke: var(--tg-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.3s; }
+.tick.seen svg { stroke: var(--tg-tick); }
+.msg-wrapper.in .ticks { display: none; }
+
+.ctx-menu {
+  position: fixed; background: var(--tg-white);
+  border-radius: 16px; padding: 6px 0; min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  z-index: 200; animation: popIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  border: 0.5px solid var(--tg-border);
+}
+.ctx-menu.hidden { display: none; }
+.ctx-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px; cursor: pointer; font-size: 14px;
+  transition: background 0.12s;
+}
+.ctx-item:hover { background: var(--tg-bg); }
+.ctx-item.danger { color: #e53935; }
+.ctx-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.ctx-sep { height: 0.5px; background: var(--tg-border); margin: 4px 0; }
+
+.selection-bar {
+  display: none; align-items: center; gap: 12px;
+  padding: 0 12px; height: var(--header-h);
+  background: var(--tg-blue); color: white;
+  position: absolute; inset: 0 0 auto 0; z-index: 20;
+}
+.selection-bar.visible { display: flex; }
+.sel-count { flex: 1; font-size: 16px; font-weight: 600; }
+.sel-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; }
+.sel-btn:hover { background: rgba(255,255,255,0.15); }
+.sel-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ========== INPUT AREA ========== */
+.input-area {
+  position: relative;
+  z-index: 10;
+  background: var(--tg-header);
+  border-top: 0.5px solid var(--tg-border);
+  padding: 8px 10px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.reply-strip {
+  display: none; align-items: center; gap: 8px;
+  padding: 6px 10px; margin-bottom: 6px;
+  background: var(--tg-bg); border-radius: 12px;
+}
+.reply-strip.visible { display: flex; }
+.reply-strip-left { border-left: 3px solid var(--tg-blue); padding-left: 8px; flex: 1; min-width: 0; }
+.rs-author { font-size: 12px; color: var(--tg-blue); font-weight: 600; }
+.rs-text { font-size: 13px; color: var(--tg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-close { flex-shrink: 0; cursor: pointer; color: var(--tg-muted); }
+.rs-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+.input-row { display: flex; align-items: flex-end; gap: 8px; }
+.textarea-wrap {
+  flex: 1; position: relative;
+  background: var(--tg-input-bg);
+  border: 1.5px solid var(--tg-border);
+  border-radius: 22px; display: flex; align-items: flex-end;
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+.textarea-wrap:focus-within { border-color: var(--tg-blue); }
+.msg-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: var(--tg-text);
+  resize: none;
+  max-height: 120px;
+  min-height: 42px;
+  font-family: var(--font);
+  line-height: 1.4;
+  overflow-y: auto;
+  font-family: 'EnFont';
+}
+.msg-input::placeholder { color: var(--tg-muted); }
+.send-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--tg-blue); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s, transform 0.1s;
+}
+.send-btn:hover { background: var(--tg-dark-blue); }
+.send-btn:active { transform: scale(0.9); }
+.send-btn svg { width: 22px; height: 22px; fill: white; }
+
+/* ========== SETTINGS MODAL ========== */
+.settings-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 500; display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s;
+}
+.settings-modal-overlay.hidden { display: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.settings-modal {
+  background: var(--tg-white);
+  border-radius: 20px;
+  width: 92%;
+  max-width: 420px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalPop 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  overflow: hidden;
+}
+@keyframes modalPop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.settings-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid var(--tg-border);
+  flex-shrink: 0;
+}
+.settings-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+.settings-modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: none; background: var(--tg-bg);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--tg-text); font-size: 18px;
+  transition: background 0.15s;
+}
+.settings-modal-close:hover { background: var(--tg-border); }
+
+.settings-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.settings-modal-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 0.5px solid var(--tg-border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.settings-modal-footer button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+  min-width: 80px;
+}
+.btn-modal-save {
+  background: var(--tg-blue);
+  color: white;
+}
+.btn-modal-save:hover { background: var(--tg-dark-blue); }
+.btn-modal-cancel {
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  border: 1.5px solid var(--tg-border) !important;
+}
+.btn-modal-cancel:hover { background: var(--tg-border); }
+.btn-modal-reset {
+  background: transparent;
+  color: var(--tg-muted);
+  border: 1.5px solid var(--tg-border) !important;
+}
+.btn-modal-reset:hover { background: var(--tg-bg); }
+
+/* Settings sections inside modal */
+.settings-section { margin-bottom: 20px; }
+.settings-section-label { font-size: 12px; color: var(--tg-blue); font-weight: 600; padding: 0 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.settings-card { background: var(--tg-bg); border-radius: 14px; overflow: hidden; }
+.settings-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  transition: background 0.12s;
+  border-bottom: 0.5px solid var(--tg-border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { flex: 1; font-size: 15px; }
+.settings-row-value { font-size: 14px; color: var(--tg-muted); }
+.settings-row svg { width: 20px; height: 20px; stroke: var(--tg-blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.settings-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1.5px solid var(--tg-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  outline: none;
+  min-width: 0;
+}
+.settings-input:focus { border-color: var(--tg-blue); }
+
+.toggle-wrap { display: flex; align-items: center; padding: 14px 16px; border-bottom: 0.5px solid var(--tg-border); }
+.toggle-wrap:last-child { border-bottom: none; }
+.toggle-label { flex: 1; font-size: 15px; }
+.toggle { position: relative; width: 50px; height: 28px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background: #ccc; border-radius: 28px; transition: background 0.25s;
+}
+.toggle-slider:before {
+  content: ''; position: absolute; width: 22px; height: 22px;
+  border-radius: 50%; background: white;
+  left: 3px; top: 3px; transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--tg-blue); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+
+.color-row { display: flex; gap: 10px; padding: 12px 16px; flex-wrap: wrap; }
+.color-swatch {
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  border: 3px solid transparent; transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+}
+.color-swatch.active { border-color: var(--tg-blue); transform: scale(1.1); }
+.color-swatch.active::after {
+  content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 14px; font-weight: 700;
+}
+
+.bubble-preview {
+  padding: 12px 16px; display: flex; gap: 16px; align-items: center;
+}
+.preview-bubble {
+  padding: 8px 14px; font-size: 13px; max-width: 140px;
+  word-break: break-word;
+}
+.preview-bubble.out { background: var(--tg-bubble-out); align-self: flex-end; }
+.preview-bubble.in { background: var(--tg-bubble-in); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+.bg-options { display: flex; gap: 10px; padding: 12px 16px; overflow-x: auto; }
+.bg-thumb {
+  width: 60px; height: 85px; border-radius: 12px; flex-shrink: 0;
+  cursor: pointer; border: 3px solid transparent;
+  overflow: hidden; transition: border-color 0.15s, transform 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: white;
+  position: relative;
+}
+.bg-thumb:hover { transform: scale(1.05); }
+.bg-thumb.active { border-color: var(--tg-blue); transform: scale(1.05); }
+
+/* Other modals */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 500; display: flex; align-items: flex-end; justify-content: center;
+  animation: fadeIn 0.15s;
+}
+.modal-overlay.hidden { display: none; }
+.modal-sheet {
+  background: var(--tg-white); border-radius: 20px 20px 0 0;
+  padding: 20px; width: 100%; max-height: 70vh;
+  overflow-y: auto; animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; text-align: center; }
+.select-text-area { width: 100%; min-height: 100px; padding: 12px; background: var(--tg-bg); border: 1.5px solid var(--tg-border); border-radius: 12px; font-size: 15px; color: var(--tg-text); resize: none; outline: none; }
+.select-text-area:focus { border-color: var(--tg-blue); }
+.modal-btns { display: flex; gap: 10px; margin-top: 14px; }
+.btn-modal-ok { flex: 1; padding: 12px; background: var(--tg-blue); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.btn-modal-cancel-btn { padding: 12px 20px; background: var(--tg-bg); color: var(--tg-text); border: none; border-radius: 12px; font-size: 15px; cursor: pointer; border: 1.5px solid var(--tg-border); }
+
+.edit-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--tg-border); border-radius: 12px; font-size: 15px; color: var(--tg-text); background: var(--tg-bg); outline: none; margin-top: 8px; }
+.edit-input:focus { border-color: var(--tg-blue); }
+
+.typing-dots { display: flex; align-items: center; gap: 4px; padding: 10px 14px; }
+.typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--tg-muted); display: inline-block; animation: typingBounce 1.2s infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+.scroll-bottom-btn {
+  position: absolute; bottom: 10px; right: 12px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--tg-white); border: 0.5px solid var(--tg-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 5;
+}
+.scroll-bottom-btn.visible { display: flex; }
+.scroll-bottom-btn svg { width: 20px; height: 20px; stroke: var(--tg-blue); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.7); color: white; padding: 8px 18px;
+  border-radius: 20px; font-size: 14px; z-index: 1000;
+  animation: toastIn 0.2s ease, toastOut 0.3s ease 1.5s forwards;
+  white-space: nowrap;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+.pin-zoom-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.pin-zoom-overlay.hidden { display: none; }
+.pin-zoom-bubble {
+  background: var(--tg-white); border-radius: 16px; padding: 20px;
+  max-width: 80%; animation: zoomIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes zoomIn { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.pin-zoom-text { font-size: 16px; line-height: 1.5; margin-bottom: 12px; }
+.pin-zoom-close { width: 100%; padding: 10px; background: var(--tg-bg); border: none; border-radius: 10px; font-size: 14px; cursor: pointer; }
+
+@media (max-width: 480px) {
+  .settings-modal {
+    width: 98%;
+    max-height: 95vh;
+    border-radius: 16px;
+  }
+  .settings-modal-body {
+    padding: 12px;
+  }
+  .settings-modal-footer {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .settings-modal-footer button {
+    flex: 1 0 45%;
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+.modal.hidden { display: none; }
+.modal-content { background: rgba(30,42,55,0.95); color: white; padding: 20px; border-radius: 12px; width: 85%; max-width: 300px; text-align: center; font-family: sans-serif; }
+.modal-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+.delete-btn { background: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+.cancel-btn { background: #ddd; color: #333; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+
+.delete-btn-chat{
+  background: transparent;
+}
+
+
+/* فقط کامپیوتر */
+@media (min-width: 769px) {
+    * {
+        font-family: 'EnFont',"IRANSans";
+    }
+
+    .msg-input {
+      font-family: 'EnFont',"IRANSans";
+    }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="screen" id="loginScreen">
+  <div class="login-logo">
+    <svg fill="none" viewBox="0 0 24 24" height="24" width="24"><g id="chat-heart-alt-fill"><path id="Union" fill="#d9d3ff" d="M12 2c5.5228 0 10 4.47715 10 10 0 5.5228 -4.4772 10 -10 10 -1.5466 0 -3.01294 -0.3529 -4.32227 -0.9814l-4.8955 1.4404c-0.35107 0.1032 -0.73051 0.0068 -0.98926 -0.252 -0.25875 -0.2587 -0.35521 -0.6382 -0.25195 -0.9892l1.43945 -4.8965C2.35229 15.0123 2 13.5461 2 12 2 6.47716 6.47716 2.00001 12 2m1.7998 6.5c-0.3499 0.00003 -0.6878 0.07125 -1.0127 0.21289 -0.3247 0.14163 -0.5872 0.3371 -0.7871 0.58691 -0.2 -0.24993 -0.4588 -0.44527 -0.7754 -0.58691 -0.3165 -0.14158 -0.6579 -0.21286 -1.0244 -0.21289 -0.59999 0.00001 -1.11648 0.21706 -1.54981 0.65039C8.21707 9.58372 8 10.1002 8 10.7002c0.00002 0.3166 0.04605 0.6084 0.1377 0.875 0.09169 0.2666 0.27925 0.5836 0.5625 0.9502 0.28331 0.3666 0.68369 0.8043 1.20019 1.3125 0.37721 0.3711 0.85231 0.8202 1.42481 1.3467 0.3808 0.3499 0.9671 0.3474 1.3457 -0.0049 0.5488 -0.5107 1.0124 -0.9502 1.3916 -1.3174 0.5249 -0.5083 0.9296 -0.9459 1.2129 -1.3125 0.283 -0.3663 0.4742 -0.6871 0.5742 -0.9619 0.1 -0.275 0.1504 -0.5711 0.1504 -0.8877 0 -0.6 -0.2171 -1.11648 -0.6504 -1.54981 -0.4333 -0.43332 -0.9498 -0.65039 -1.5498 -0.65039" stroke-width="1"></path></g></svg>
+  </div>
+  <div class="login-title">Mohammad & Hasti - Chat</div>
+  <div class="login-sub">Enter your name and ID to start chatting<br>Share your ID so others can message you</div>
+  <div class="login-form">
+    <div class="login-input-wrap">
+      <label>Your Name</label>
+      <input class="login-input" id="loginName" type="text" placeholder="username" maxlength="32" autocomplete="off">
+    </div>
+    <div class="login-input-wrap">
+      <label>Choose a unique ID</label>
+      <input class="login-input" id="loginId" type="text" placeholder="without @" maxlength="20" autocomplete="off">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Start Chatting →</button>
+  </div>
+</div>
+
+<!-- ===== HOME SCREEN ===== -->
+<div class="screen hidden" id="homeScreen">
+  <div class="home-header">
+    <h1>Chats M & H</h1>
+    <button class="icon-btn" onclick="showSettingsModal()" title="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div class="myid-badge">Your ID: <b id="myIdDisplay">—</b></div>
+  <div class="new-chat-form">
+    <div class="label">Start a new chat — enter their ID:</div>
+    <div class="new-chat-row">
+      <input class="new-chat-input" id="newChatId" type="text" placeholder="Friend's ID..." autocomplete="off">
+      <button class="new-chat-btn" onclick="startNewChat()">Chat</button>
+    </div>
+  </div>
+  <div class="chat-list" id="chatList"></div>
+</div>
+<div id="deleteModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Are you sure you want to permanently delete this chat?</h3>
+    <br>
+    <p>The messages inside won't be deleted.</p>
+    <div class="modal-actions">
+      <button onclick="closeModal()" class="cancel-btn">Cancel</button>
+      <button onclick="confirmDeleteChat()" class="delete-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== CHAT SCREEN ===== -->
+<div class="screen hidden" id="chatScreen">
+  <div class="bg-layer" id="bgLayer"></div>
+  <div class="chat-content">
+    <div class="chat-header" id="chatHeader">
+      <button class="icon-btn" onclick="goHome()" title="Back">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="chat-peer-info" id="peerInfo">
+        <div class="chat-peer-name" id="peerName">—</div>
+        <div class="chat-peer-status online" id="peerStatus">online</div>
+      </div>
+      <button class="icon-btn" onclick="showSettingsModal()" title="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="selection-bar" id="selectionBar">
+      <button class="sel-btn" onclick="clearSelection()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <span class="sel-count" id="selCount">0 selected</span>
+      <button class="sel-btn" onclick="copySelected()" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      <button class="sel-btn" onclick="deleteSelected()" title="Delete"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+    </div>
+    <div class="pin-bar" id="pinBar" onclick="scrollToPin()">
+      <div class="pin-icon"><svg viewBox="0 0 24 24"><path d="M12 17v5M8.5 9.5L4 15h16l-4.5-5.5M12 3v6M9 7h6"/></svg></div>
+      <div class="pin-content">
+        <div class="pin-label">Pinned Message</div>
+        <div class="pin-text" id="pinText">—</div>
+      </div>
+      <div class="pin-close" onclick="event.stopPropagation();unpinMessage()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+    </div>
+    <div class="messages-area" id="messagesArea" onscroll="onMsgsScroll()"></div>
+    <div class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="input-area" id="inputArea">
+      <div class="reply-strip" id="replyStrip">
+        <div class="reply-strip-left">
+          <div class="rs-author" id="rsAuthor">—</div>
+          <div class="rs-text" id="rsText">—</div>
+        </div>
+        <div class="rs-close" onclick="cancelReply()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+      </div>
+      <div class="input-row">
+        <div class="textarea-wrap">
+          <textarea class="msg-input" id="msgInput" placeholder="Message..." rows="1"
+            oninput="onInputChange()" onkeydown="onInputKeydown(event)"></textarea>
+        </div>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
+<div class="settings-modal-overlay hidden" id="settingsModal">
+  <div class="settings-modal" onclick="event.stopPropagation()">
+    <div class="settings-modal-header">
+      <div class="settings-modal-title">Settings</div>
+      <button class="settings-modal-close" onclick="closeSettingsModal()">✕</button>
+    </div>
+    <div class="settings-modal-body" id="settingsModalBody"></div>
+    <div class="settings-modal-footer">
+      <button class="btn-modal-reset" onclick="resetSettingsModal()">Default</button>
+      <button class="btn-modal-cancel" onclick="closeSettingsModal()">Cancel</button>
+      <button class="btn-modal-save" onclick="saveSettingsModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Context menu -->
+<div class="ctx-menu hidden" id="ctxMenu"></div>
+
+<!-- Select part modal -->
+<div class="modal-overlay hidden" id="selectPartModal">
+  <div class="modal-sheet">
+    <div class="modal-title">Select Part to Reply</div>
+    <div id="selectPartFull" style="font-size:14px;color:var(--tg-muted);margin-bottom:10px;line-height:1.5;padding:8px;background:var(--tg-bg);border-radius:10px;"></div>
+    <textarea class="select-text-area" id="selectPartInput" placeholder="Type or paste the part you want to reply to..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel-btn" onclick="closeSelectPart()">Cancel</button>
+      <button class="btn-modal-ok" onclick="confirmSelectPart()">Reply This Part</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay hidden" id="editModal">
+  <div class="modal-sheet">
+    <div class="modal-title">Edit Message</div>
+    <textarea class="select-text-area edit-input" id="editInput" placeholder="Edit your message..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel-btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-modal-ok" onclick="confirmEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Pin zoom overlay -->
+<div class="pin-zoom-overlay hidden" id="pinZoomOverlay" onclick="closePinZoom()">
+  <div class="pin-zoom-bubble" onclick="event.stopPropagation()">
+    <div class="pin-zoom-text" id="pinZoomText">—</div>
+    <button class="pin-zoom-close" onclick="closePinZoom()">Close</button>
+  </div>
+</div>
+
+
+
+<script type="module">
+// ۱. وارد کردن کتابخانه سوپابیس به صورت ماژولار
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ۲. تنظیمات اتصال به سوپابیس (این مقادیر رو از داشبورد سوپابیس کپی کن)
+const supabaseUrl = 'https://vdzmpcupcnxvjeuxupqi.supabase.co'; // آدرس پروژه شما
+const supabaseKey = 'sb_publishable_x9etTWNGihrn_CxcTV3WEQ_08L3m7lP';       // کلید Anon پروژه شما
+
+// ۳. راه‌اندازی سوپابیس
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+window.supabase = supabase;
+
+// اعلام اینکه سوپابیس آماده استفاده است
+window.dispatchEvent(new Event('supabaseReady'));
+
+</script>
+
+<script>
+// ===================================================
+// 📌 آدرس تصاویر پس‌زمینه را اینجا وارد کنید
+// ===================================================
+const BG_IMAGE_MOBILE = '../../img/background/MY.jpg';   // آدرس تصویر برای موبایل (عرض کمتر از 768px)
+const BG_IMAGE_DESKTOP = '../../img/background/MY.jpg';  // آدرس تصویر برای دسکتاپ (عرض بیشتر یا مساوی 768px)
+
+// ===================================================
+// STATE (وضعیت برنامه - این‌ها برای کارکرد ظاهر چت الزامی هستند)
+// ===================================================
+let myId = '', myName = '', peerId = '', peerName = '';
+let messages = {};
+
+// این دو متغیر بجای فایربیس، اشتراک‌های کانال زنده (Realtime Channel) سوپابیس را ذخیره می‌کنند
+let messagesListener = null; 
+let peerPresenceListener = null;
+let pinnedMsgId = null;
+let replyTo = null;
+let selectedMsgs = new Set();
+let isSelectMode = false;
+let selStartId = null;
+let pendingCtxMsgId = null;
+let pendingEditMsgId = null;
+let pendingSelectPartId = null;
+let typingTimer = null;
+let isTyping = false;
+let lastSwipeStartX = 0, lastSwipeStartY = 0, swipeMsgId = null;
+
+// تنظیمات قالب و شخصی‌سازی چت (حتماً باید بمانند)
+let settings = {
+  theme: 'light',
+  chatBg: 'default',
+  bubbleRadius: 18,
+  accentColor: '#2AABEE',
+  notifications: true,
+};
+let pendingSettings = null;
+let dbReady = false; // این متغیر با رویداد supabaseReady مقدارش true خواهد شد
+
+// ===================================================
+// SUPABASE READY
+// ===================================================
+window.addEventListener('supabaseReady', () => {
+  dbReady = true;
+  loadAll();
+});
+
+function loadAll() {
+  const saved = localStorage.getItem('mychat_identity');
+  if (saved) {
+    const d = JSON.parse(saved);
+    myId = d.id; 
+    myName = d.name;
+    applyStoredSettings();
+    showHomeScreen();
+
+    // اگر کاربر از قبل لاگین بود، قابلیت‌های زنده سوپابیس فعال شوند
+    if (typeof registerPresence === 'function') registerPresence();
+    if (typeof listenToMessages === 'function') listenToMessages();
+  }
+  const s = localStorage.getItem('mychat_settings');
+  if (s) settings = {...settings, ...JSON.parse(s)};
+  applySettings(settings);
+}
+
+// ===================================================
+// LOGIN (Supabase Version)
+// ===================================================
+window.doLogin = async function() {
+  const name = document.getElementById('loginName').value.trim();
+  const id = document.getElementById('loginId').value.trim().replace(/\s+/g,'').toLowerCase();
+  
+  if (!name || !id) { showToast('Please enter name and ID'); return; }
+  if (id.length < 3) { showToast('ID must be at least 3 characters'); return; }
+  if (!dbReady) { showToast('Connecting to database...'); return; }
+
+  // استعلام وضعیت آیدی از جدول presence در سوپابیس
+  const { data, error } = await window.supabase
+    .from('presence')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    showToast('Error connecting to database!');
+    return;
+  }
+
+  if (data) {
+    // اگر آیدی وجود داشت، بررسی تطابق نام برای ورود مجدد
+    if (data.name === name) {
+      proceedWithLogin(id, name);
+    } else {
+      showToast('This ID is already taken by someone else!');
+    }
+  } else {
+    // اگر آیدی وجود نداشت، کاربر جدید است و وارد می‌شود
+    proceedWithLogin(id, name);
+  }
+};
+
+function proceedWithLogin(id, name) {
+  myId = id; myName = name;
+  localStorage.setItem('mychat_identity', JSON.stringify({id, name}));
+  
+  registerPresence();
+  
+  // فعال کردن گوش‌به‌زنگ بودن برای پیام‌ها (در قدم‌های بعدی این تابع را کامل می‌کنیم)
+  if (typeof listenToMessages === 'function') listenToMessages();
+  
+  applyStoredSettings();
+  showHomeScreen();
+  showToast('Welcome! 👋');
+}
+
+async function registerPresence() {
+  if (!dbReady || !myId) return;
+
+  // ثبت یا بروزرسانی وضعیت آنلاین در جدول دیتابیس
+  await window.supabase
+    .from('presence')
+    .upsert({ 
+      id: myId, 
+      name: myName, 
+      online: true, 
+      last_seen: new Date().toISOString() 
+    });
+
+  // ایجاد کانال زنده برای اعلام حضور لحظه‌ای به بقیه کاربران
+  const userChannel = window.supabase.channel('online-users');
+  userChannel
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        userChannel.track({
+          user_id: myId,
+          name: myName,
+          online: true
+        });
+      }
+    });
+}
+// ===================================================
+// HOME SCREEN (Supabase Version)
+// ===================================================
+function showHomeScreen() {
+  document.getElementById('myIdDisplay').textContent = myId;
+  showScreen('homeScreen');
+  loadChatList();
+}
+
+function loadChatList() {
+  const chats = JSON.parse(localStorage.getItem('mychat_chats') || '[]');
+  const list = document.getElementById('chatList');
+  list.innerHTML = '';
+  if (!chats.length) {
+    list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--tg-muted);font-size:14px;">No chats yet.<br>Enter a friend\'s ID above to start.</div>';
+    return;
+  }
+  chats.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'chat-item';
+    item.innerHTML = `
+      <div class="chat-avatar" style="background:${avatarColor(c.peerId)}">${initials(c.peerName)}</div>
+      <div class="chat-info" style="flex:1;">
+        <div class="chat-name-row">
+          <span class="chat-name">${escHtml(c.peerName)}</span>
+          <span class="chat-time">${c.lastTime || ''}</span>
+        </div>
+        <div class="chat-preview">${escHtml(c.lastMsg || 'Tap to open')}</div>
+      </div>
+    <button class="delete-btn delete-btn-chat" data-id="${c.peerId}" onclick="openDeleteModal(event, '${c.peerId}')">
+
+<svg version="1.1" viewBox="0 0 512 512" width="22" height="22" style="display:block"><rect x="104.923" y="191.732" style="fill:#F4B2B0;" width="35" height="35"/>    <g>        <path style="fill:#B3404A;" d="M180.066,413.377c-8.69,0-15.738-7.047-15.738-15.738V296.918c0-8.69,7.047-15.738,15.738-15.738s15.738,7.047,15.738,15.738v100.721C195.803,406.329,188.756,413.377,180.066,413.377z"/>        <path style="fill:#B3404A;" d="M256,413.377c-8.69,0-15.738-7.047-15.738-15.738V296.918c0-8.69,7.047-15.738,15.738-15.738c8.69,0,15.738,7.047,15.738,15.738v100.721C271.738,406.329,264.69,413.377,256,413.377z"/>        <path style="fill:#B3404A;" d="M331.934,413.377c-8.69,0-15.738-7.047-15.738-15.738V296.918c0-8.69,7.047-15.738,15.738-15.738s15.738,7.047,15.738,15.738v100.721C347.672,406.329,340.625,413.377,331.934,413.377z"/>        <path style="fill:#B3404A;" d="M395.935,73.706c-8.69,0-15.738,7.047-15.738,15.738s7.047,15.738,15.738,15.738c18.295,0,33.18,14.885,33.18,33.18v37.64H407.08H104.92H82.886v-37.64c0-18.295,14.885-33.18,33.18-33.18h163.541c8.69,0,15.738-7.047,15.738-15.738s-7.047-15.738-15.738-15.738h-92.852v-42.23h138.492v57.968c0,8.69,7.047,15.738,15.738,15.738s15.738-7.047,15.738-15.738V15.738c0-8.69-7.047-15.738-15.738-15.738H171.017c-8.69,0-15.738,7.047-15.738,15.738v57.968h-39.214c-35.651,0-64.655,29.005-64.655,64.655v53.377c0,8.69,7.047,15.738,15.738,15.738h22.034v288.786c0,8.69,7.047,15.738,15.738,15.738h302.16c8.69,0,15.738-7.047,15.738-15.738V207.476h22.034c8.69,0,15.738-7.047,15.738-15.738v-53.377C460.59,102.71,431.585,73.706,395.935,73.706z M391.342,480.525H120.658V207.476h270.685V480.525z"/>    </g></svg>      
+      </button>
+    `;
+    item.onclick = () => openChat(c.peerId, c.peerName);
+    list.appendChild(item);
+  });
+}
+
+
+let peerIdToDelete = null;
+
+// باز کردن مودال حذف
+window.openDeleteModal = function (event, peerId) {
+    event.stopPropagation();
+
+    peerIdToDelete = peerId;
+
+    const modal = document.getElementById("deleteModal");
+    modal.classList.remove("hidden");
+};
+
+// بستن مودال حذف
+window.closeModal = function () {
+    const modal = document.getElementById("deleteModal");
+
+    modal.classList.add("hidden");
+
+    peerIdToDelete = null;
+};
+
+// تایید حذف گفتگو
+window.confirmDeleteChat = async function () {
+
+    if (!peerIdToDelete) {
+        closeModal();
+        return;
+    }
+
+    // حذف از لیست چت‌ها
+    let chats = JSON.parse(localStorage.getItem("mychat_chats") || "[]");
+
+    chats = chats.filter(chat => chat.peerId !== peerIdToDelete);
+
+    localStorage.setItem(
+        "mychat_chats",
+        JSON.stringify(chats)
+    );
+
+    // افزودن به لیست مخفی
+    let hiddenChats = JSON.parse(localStorage.getItem("hiddenChats") || "[]");
+
+    if (!hiddenChats.includes(peerIdToDelete)) {
+        hiddenChats.push(peerIdToDelete);
+
+        localStorage.setItem(
+            "hiddenChats",
+            JSON.stringify(hiddenChats)
+        );
+    }
+
+    // بستن مودال
+    closeModal();
+
+    // بروزرسانی لیست چت‌ها
+    loadChatList();
+
+    // پیام موفقیت
+    showToast("گفتگو حذف شد");
+};
+
+
+
+
+// تغییر به تابع async برای کار با سوپابیس
+window.startNewChat = async function() {
+  const pId = document.getElementById('newChatId').value.trim().toLowerCase();
+  if (!pId) { showToast('Enter an ID'); return; }
+  if (pId === myId) { showToast("That's your own ID!"); return; }
+  if (!dbReady) { showToast('Connecting...'); return; }
+
+  // استعلام از جدول presence سوپابیس برای پیدا کردن نام مخاطب جدید
+  const { data, error } = await window.supabase
+    .from('presence')
+    .select('name')
+    .eq('id', pId)
+    .maybeSingle();
+
+  if (error) {
+    showToast('Error finding user!');
+    return;
+  }
+
+  // اگر کاربر پیدا شد نامش را برمی‌داریم، در غیر این صورت از همان آیدی به عنوان نام استفاده می‌کنیم
+  const name = data?.name || pId;
+  
+  saveChat(pId, name);
+  openChat(pId, name);
+};
+
+function saveChat(pId, pName, lastMsg='', lastTime='') {
+  let chats = JSON.parse(localStorage.getItem('mychat_chats') || '[]');
+  const idx = chats.findIndex(c => c.peerId === pId);
+  if (idx >= 0) {
+    chats[idx] = {...chats[idx], peerName: pName || chats[idx].peerName, lastMsg, lastTime};
+  } else {
+    chats.unshift({peerId: pId, peerName: pName, lastMsg, lastTime});
+  }
+  chats.sort((a,b) => (b.lastTime||'') > (a.lastTime||'') ? 1 : -1);
+  localStorage.setItem('mychat_chats', JSON.stringify(chats));
+}
+
+// ===================================================
+// OPEN CHAT (Supabase Version)
+// ===================================================
+let typingChannel = null; // متغیر کمکی برای مدیریت سیگنال تایپینگ
+
+async function openChat(pId, pName) {
+  // قطع اتصال شنودگرهای قبلی سوپابیس برای جلوگیری از تداخل
+  if (messagesListener) { window.supabase.removeChannel(messagesListener); messagesListener = null; }
+  if (peerPresenceListener) { window.supabase.removeChannel(peerPresenceListener); peerPresenceListener = null; }
+  if (typingChannel) { window.supabase.removeChannel(typingChannel); typingChannel = null; }
+  
+  peerId = pId; peerName = pName;
+  messages = {};
+  selectedMsgs.clear();
+  isSelectMode = false;
+  replyTo = null;
+  pinnedMsgId = null;
+  document.getElementById('newChatId').value = '';
+  document.getElementById('peerName').textContent = pName;
+  document.getElementById('replyStrip').classList.remove('visible');
+  document.getElementById('selectionBar').classList.remove('visible');
+  document.getElementById('pinBar').classList.remove('visible');
+  document.getElementById('messagesArea').innerHTML = '';
+  
+  showScreen('chatScreen');
+  applyBackground();
+  
+  // فعال‌سازی شنودگرهای جدید سوپابیس
+  listenMessages();
+  listenPeerPresence();
+  listenTyping();
+  
+  document.getElementById('msgInput').focus();
+  setTimeout(scrollToBottom, 100);
+}
+
+// ساخت شناسه منحصربه‌فرد برای اتاق چت دونفره
+function chatPath() {
+  const sorted = [myId, peerId].sort();
+  return `${sorted[0]}_${sorted[1]}`;
+}
+
+// گوش دادن به پیام‌ها و دریافت پیام‌های قدیمی
+async function listenMessages() {
+  const roomId = chatPath();
+
+  // ۱. ابتدا پیام‌های قدیمی این اتاق را لود می‌کنیم
+  const { data, error } = await window.supabase
+    .from('messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .order('ts', { ascending: true });
+
+  if (!error && data) {
+    messages = {};
+    // تبدیل آرایه سوپابیس به آبجکت کلیدواژه‌ای (شبیه فایربیس) تا تابع renderMessages شما ارور ندهد
+    data.forEach(msg => {
+      messages[msg.id] = msg;
+    });
+    renderMessages();
+    markSeen();
+  }
+
+// ۲. ایجاد کانال زنده برای گرفتن تغییرات
+  messagesListener = window.supabase
+    .channel(`room:${roomId}`)
+    // الف) دریافت پیام‌های جدید (فقط برای همین اتاق)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` }, payload => {
+      messages[payload.new.id] = payload.new;
+      renderMessages();
+      if (payload.new.sender !== myId) markSeen();
+    })
+    // ب) دریافت ویرایش‌ها (فقط برای همین اتاق)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages', filter: `room_id=eq.${roomId}` }, payload => {
+      messages[payload.new.id] = payload.new;
+      renderMessages();
+    })
+    // ج) دریافت حذف‌ها (بدون فیلتر اتاق - تا مشکل سوپابیس دور زده شود)
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, payload => {
+      // اینجا خودمون چک می‌کنیم که اگه پیام تو صفحه ماست، درجا پاکش کنه
+      if (messages[payload.old.id]) {
+        delete messages[payload.old.id];
+        renderMessages();
+      }
+    })
+    .subscribe();
+}
+
+// خوانده شدن پیام‌ها
+async function markSeen() {
+  if (!dbReady) return;
+  const roomId = chatPath();
+
+  // آپدیت وضعیت پیام‌های طرف مقابل به خوانده شده (seen = true)
+  await window.supabase
+    .from('messages')
+    .update({ seen: true })
+    .eq('room_id', roomId)
+    .not('sender', 'eq', myId)
+    .eq('seen', false);
+}
+
+window.sendMessage = async function() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!dbReady) { showToast('Not connected'); return; }
+  
+  input.value = '';
+  resizeInput();
+  stopTypingSignal();
+
+  // آماده‌سازی داده‌ها با فرمت استاندارد دیتابیس
+  const msgData = { 
+    room_id: chatPath(),
+    sender: myId, 
+    senderName: myName, 
+    text: text, 
+    ts: Date.now(), // 👈 فقط این خط تغییر کرد تا عدد ارسال شود
+    seen: false,
+    replyTo: replyTo ? { id: replyTo.id, author: replyTo.author, text: replyTo.text } : null
+  };
+
+  // درج در دیتابیس سوپابیس
+  const { error } = await window.supabase.from('messages').insert([msgData]);
+
+  if (error) {
+    showToast('Failed to send message');
+    console.error('Supabase Insert Error:', error);
+  } else {
+    cancelReply();
+    saveChat(peerId, peerName, text, formatTime(new Date()));
+    scrollToBottom();
+  }
+};
+
+window.onInputKeydown = function(e) { if (e.key === 'Enter' && !e.shiftKey) return; };
+window.onInputChange = function() { resizeInput(); sendTypingSignal(); };
+
+function resizeInput() {
+  const ta = document.getElementById('msgInput');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+}
+
+// ارسال سیگنال تایپینگ با سیستم سریع Broadcast سوپابیس
+function sendTypingSignal() {
+  if (!dbReady || !myId || !peerId) return;
+  if (!isTyping) {
+    isTyping = true;
+    if (typingChannel) {
+      typingChannel.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { id: myId, isTyping: true }
+      });
+    }
+  }
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(stopTypingSignal, 3000);
+}
+
+function stopTypingSignal() {
+  if (!dbReady || !myId) return;
+  isTyping = false;
+  if (typingChannel) {
+    typingChannel.send({
+      type: 'broadcast',
+      event: 'typing',
+      payload: { id: myId, isTyping: false }
+    });
+  }
+}
+
+// گوش دادن به وضعیت تایپ کردن مخاطب
+function listenTyping() {
+  const roomId = chatPath();
+  typingChannel = window.supabase.channel(`typing:${roomId}`);
+
+  typingChannel
+    .on('broadcast', { event: 'typing' }, payload => {
+      const data = payload.payload;
+      if (data.id !== myId) {
+        const statusEl = document.getElementById('peerStatus');
+        if (data.isTyping) {
+          statusEl.textContent = 'typing...';
+          statusEl.className = 'chat-peer-status';
+        } else {
+          // اگر تایپ تمام شد، وضعیت آنلاین/آفلاین بودن عادی را برگردان
+          listenPeerPresence(); 
+        }
+      }
+    })
+    .subscribe();
+}
+
+// گوش دادن به آنلاین یا آفلاین شدن مخاطب
+async function listenPeerPresence() {
+  if (peerPresenceListener) window.supabase.removeChannel(peerPresenceListener);
+
+  // ابتدا وضعیت فعلی مخاطب را یک‌بار می‌گیریم
+  const { data } = await window.supabase
+    .from('presence')
+    .select('*')
+    .eq('id', peerId)
+    .maybeSingle();
+  
+  if (data) {
+    peerName = data.name || peerId;
+    document.getElementById('peerName').textContent = peerName;
+    updateOnlineStatus(data);
+  }
+
+  // سپس تغییرات لحظه‌ای وضعیت آنلاین بودن مخاطب را رصد می‌کنیم
+  peerPresenceListener = window.supabase
+    .channel(`peer-presence:${peerId}`)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'presence', filter: `id=eq.${peerId}` }, payload => {
+      const d = payload.new;
+      peerName = d?.name || peerId;
+      document.getElementById('peerName').textContent = peerName;
+      updateOnlineStatus(d);
+    })
+    .subscribe();
+}
+
+function updateOnlineStatus(d) {
+  const statusEl = document.getElementById('peerStatus');
+  if (!d) { statusEl.textContent = 'offline'; statusEl.className = 'chat-peer-status'; return; }
+  if (d.online) { statusEl.textContent = 'online'; statusEl.className = 'chat-peer-status online'; }
+  else {
+    const lastSeenTime = d.last_seen ? new Date(d.last_seen).getTime() : null;
+    const t = lastSeenTime ? 'last seen ' + formatRelTime(lastSeenTime) : 'offline';
+    statusEl.textContent = t; statusEl.className = 'chat-peer-status';
+  }
+}
+
+// ===================================================
+// RENDER MESSAGES (کاملاً سازگار با سوپابیس)
+// ===================================================
+function renderMessages() {
+  const area = document.getElementById('messagesArea');
+  const prevScroll = area.scrollTop;
+  const prevHeight = area.scrollHeight;
+  const wasAtBottom = (prevHeight - prevScroll - area.clientHeight) < 80;
+
+  // مرتب‌سازی پیام‌ها بر اساس تایم‌استمپ عددی (ts) که در سوپابیس ذخیره کردیم
+  const sorted = Object.entries(messages).sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+  area.innerHTML = '';
+  let lastDate = null, lastPinnedId = null;
+
+  sorted.forEach(([id, m]) => {
+    const d = new Date(m.ts);
+    const dateStr = d.toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+    if (dateStr !== lastDate) {
+      const div = document.createElement('div');
+      div.className = 'date-divider';
+      div.innerHTML = `<span>${dateStr}</span>`;
+      area.appendChild(div);
+      lastDate = dateStr;
+    }
+    if (m.pinned) lastPinnedId = id;
+    area.appendChild(buildMsgEl(id, m));
+  });
+
+  // مدیریت نمایش نوار پیام پین شده
+  if (lastPinnedId && messages[lastPinnedId]) {
+    pinnedMsgId = lastPinnedId;
+    document.getElementById('pinText').textContent = messages[lastPinnedId].text;
+    document.getElementById('pinBar').classList.add('visible');
+  } else {
+    pinnedMsgId = null;
+    document.getElementById('pinBar').classList.remove('visible');
+  }
+
+  if (wasAtBottom) scrollToBottom(); else area.scrollTop = prevScroll;
+}
+
+function buildMsgEl(id, m) {
+  const isOut = m.sender === myId;
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg-wrapper ${isOut ? 'out' : 'in'}`;
+  wrapper.id = 'msg_' + id;
+  wrapper.dataset.msgId = id;
+  if (selectedMsgs.has(id)) wrapper.classList.add('selected');
+  if (isSelectMode) wrapper.classList.add('selecting');
+
+  // رندر کردن بخش ریپلای (فیلد replyTo در سوپابیس به صورت خودکار پارس می‌شود)
+  let replyHtml = '';
+  if (m.replyTo) {
+    replyHtml = `<div class="reply-preview" onclick="event.stopPropagation();handleReplyClick('${id}')">
+      <div class="reply-author">${escHtml(m.replyTo.author)}</div>
+      <div class="reply-text">${escHtml(m.replyTo.text)}</div>
+    </div>`;
+  }
+
+  const time = formatTime(new Date(m.ts));
+  
+  // مدیریت تیک‌های سین شدن پیام (تک تیک و دو تیک)
+  let ticksHtml = '';
+  if (isOut) {
+    ticksHtml = m.seen 
+      ? `<div class="ticks"><div class="tick seen"><svg viewBox="0 0 16 10"><polyline points="1,5 5,9 10,1"/><polyline points="6,5 10,9 15,1"/></svg></div></div>`
+      : `<div class="ticks"><div class="tick"><svg viewBox="0 0 16 10"><polyline points="3,5 7,9 14,1"/></svg></div></div>`;
+  }
+  
+  const editedHtml = m.edited ? `<span class="msg-edited">edited</span>` : '';
+
+  wrapper.innerHTML = `
+    <div class="msg-bubble" 
+      ontouchstart="onTouchStart(event,'${id}')"
+      ontouchmove="onTouchMove(event,'${id}')"
+      ontouchend="onTouchEnd(event,'${id}')"
+      oncontextmenu="onCtxMenu(event,'${id}');return false;"
+      onclick="onMsgClick(event,'${id}')">
+      ${replyHtml}
+      <span class="msg-text">${escHtml(m.text)}</span>
+      <div class="msg-meta">${editedHtml}<span class="msg-time">${time}</span>${ticksHtml}</div>
+    </div>`;
+  return wrapper;
+}
+
+// ===================================================
+// SWIPE TO REPLY (بدون نیاز به تغییر - کاملاً سازگار)
+// ===================================================
+window.onTouchStart = function(e, id) { 
+  lastSwipeStartX = e.touches[0].clientX; 
+  lastSwipeStartY = e.touches[0].clientY; 
+  swipeMsgId = id; 
+};
+
+window.onTouchMove = function(e, id) {
+  if (isSelectMode) return;
+  const dx = e.touches[0].clientX - lastSwipeStartX;
+  const dy = e.touches[0].clientY - lastSwipeStartY;
+  
+  // اگر حرکت دست افقی و به سمت چپ بود، حباب پیام کمی جابه‌جا شود
+  if (Math.abs(dx) > Math.abs(dy) && dx < -40) {
+    e.preventDefault();
+    const el = document.getElementById('msg_' + id);
+    if (el) el.style.transform = `translateX(${Math.max(dx, -60)}px)`;
+  }
+};
+
+window.onTouchEnd = function(e, id) {
+  const el = document.getElementById('msg_' + id);
+  if (!el) return;
+  const dx = e.changedTouches[0].clientX - lastSwipeStartX;
+  
+  if (!isSelectMode && dx < -40) {
+    const m = messages[id];
+    if (m) setReply(id, m.senderName, m.text); // فعال شدن ریپلای روی پیام
+    el.style.transform = '';
+    el.style.transition = 'transform 0.3s';
+    setTimeout(() => { el.style.transition = ''; }, 300);
+  } else { 
+    el.style.transform = ''; 
+  }
+};
+
+// ===================================================
+// CONTEXT MENU (بدون نیاز به تغییر - کاملاً سازگار)
+// ===================================================
+
+window.onCtxMenu = function(e, id) {
+  if (!e) return;
+  e.preventDefault(); 
+  e.stopPropagation(); // جلوگیری از انتشار کلیک به لایه‌های دیگر صفحه
+  showCtxMenu(e.clientX, e.clientY, id); 
+};
+
+window.onMsgClick = function(e, id) { 
+  if (e) e.stopPropagation();
+  if (isSelectMode) toggleSelect(id); 
+};
+
+function showCtxMenu(x, y, id) {
+  const m = messages[id]; if (!m) return;
+  pendingCtxMsgId = id;
+  const isOut = m.sender === myId;
+  const menu = document.getElementById('ctxMenu');
+  if (!menu) return;
+  
+  const items = [];
+  items.push({icon:'<svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>', label:'Reply', fn:'setReplyFromCtx'});
+  items.push({icon:'<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>', label:'Copy', fn:'copyMsgFromCtx'});
+  if (isOut) items.push({icon:'<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', label:'Edit', fn:'editMsgFromCtx'});
+  items.push(m.pinned 
+    ? {icon:'<svg viewBox="0 0 24 24"><path d="M12 17v5M8.5 9.5L4 15h16l-4.5-5.5M12 3v6M9 7h6"/><line x1="4" y1="4" x2="20" y2="20"/></svg>', label:'Unpin', fn:'unpinFromCtx'}
+    : {icon:'<svg viewBox="0 0 24 24"><path d="M12 17v5M8.5 9.5L4 15h16l-4.5-5.5M12 3v6M9 7h6"/></svg>', label:'Pin', fn:'pinFromCtx'});
+  items.push({icon:'<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 2 2z"/></svg>', label:'Select', fn:'startSelectFromCtx'});
+  if (isOut) { items.push({type:'sep'}); items.push({icon:'<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>', label:'Delete', fn:'deleteMsgFromCtx', danger:true}); }
+
+  menu.innerHTML = items.map(it => it.type === 'sep' ? '<div class="ctx-sep"></div>' : `<div class="ctx-item${it.danger?' danger':''}" onclick="ctxAction('${it.fn}')">${it.icon}<span>${it.label}</span></div>`).join('');
+  
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let cx = x, cy = y;
+  if (cx + 200 > vw) cx = vw - 200;
+  if (cy + items.length * 44 > vh) cy = vh - items.length * 44 - 20;
+  
+  menu.style.left = cx + 'px'; 
+  menu.style.top = cy + 'px';
+  
+  menu.style.display = 'block';
+  menu.classList.remove('hidden');
+  
+  setTimeout(() => document.addEventListener('click', closeCtxMenu, {once:true}), 10);
+}
+
+function closeCtxMenu() { 
+  const menu = document.getElementById('ctxMenu');
+  if (menu) {
+    menu.classList.add('hidden');
+    menu.style.display = 'none';
+  }
+}
+
+window.ctxAction = function(fn) {
+  closeCtxMenu();
+  const id = pendingCtxMsgId, m = messages[id]; if (!m) return;
+  if (fn === 'setReplyFromCtx') setReply(id, m.senderName, m.text);
+  else if (fn === 'copyMsgFromCtx') { navigator.clipboard?.writeText(m.text); showToast('Copied'); }
+  else if (fn === 'editMsgFromCtx') openEditModal(id, m.text);
+  else if (fn === 'pinFromCtx') pinMessage(id);
+  else if (fn === 'unpinFromCtx') unpinMessage();
+  else if (fn === 'startSelectFromCtx') startSelect(id);
+  else if (fn === 'deleteMsgFromCtx') deleteMsg(id);
+};
+
+// ===================================================
+// REPLY (بدون نیاز به تغییر - کاملاً سازگار)
+// ===================================================
+function setReply(id, author, text) {
+  replyTo = {id, author, text};
+  document.getElementById('rsAuthor').textContent = author;
+  document.getElementById('rsText').textContent = text;
+  document.getElementById('replyStrip').classList.add('visible');
+  document.getElementById('msgInput').focus();
+}
+
+window.cancelReply = function() { 
+  replyTo = null; 
+  document.getElementById('replyStrip').classList.remove('visible'); 
+};
+
+window.handleReplyClick = function(msgId) {
+  const m = messages[msgId]; if (!m || !m.replyTo) return;
+  pendingSelectPartId = msgId;
+  document.getElementById('selectPartFull').textContent = m.replyTo.text;
+  document.getElementById('selectPartInput').value = m.replyTo.text;
+  document.getElementById('selectPartModal').classList.remove('hidden');
+};
+
+window.closeSelectPart = function() { 
+  document.getElementById('selectPartModal').classList.add('hidden'); 
+  pendingSelectPartId = null; 
+};
+
+window.confirmSelectPart = function() {
+  const selected = document.getElementById('selectPartInput').value.trim();
+  if (!selected) { showToast('Select some text'); return; }
+  const m = messages[pendingSelectPartId]; if (!m) return;
+  setReply(pendingSelectPartId, m.replyTo?.author || m.senderName, selected);
+  closeSelectPart();
+};
+
+// ===================================================
+// EDIT (Supabase Version)
+// ===================================================
+function openEditModal(id, text) { 
+  pendingEditMsgId = id; 
+  document.getElementById('editInput').value = text; 
+  document.getElementById('editModal').classList.remove('hidden'); 
+}
+
+window.closeEditModal = function() { 
+  document.getElementById('editModal').classList.add('hidden'); 
+  pendingEditMsgId = null; 
+};
+
+// تغییر به تابع async برای کار با دیتابیس سوپابیس
+window.confirmEdit = async function() {
+  const txt = document.getElementById('editInput').value.trim();
+  if (!txt || !pendingEditMsgId) return;
+
+  // آپدیت کردن متن پیام و تغییر وضعیت edited به true در سوپابیس
+  const { error } = await window.supabase
+    .from('messages')
+    .update({ text: txt, edited: true })
+    .eq('id', pendingEditMsgId);
+
+  if (error) {
+    showToast('Failed to edit message');
+    return;
+  }
+
+  closeEditModal();
+};
+
+// ===================================================
+// PIN (Supabase Version)
+// ===================================================
+async function pinMessage(id) {
+  if (!dbReady) return;
+  const roomId = chatPath();
+
+  try {
+    // ۱. برای اطمینان، اول تمام پیام‌های پین‌شده‌ی قبلی این اتاق چت را از حالت پین خارج می‌کنیم
+    await window.supabase
+      .from('messages')
+      .update({ pinned: false })
+      .eq('room_id', roomId)
+      .eq('pinned', true);
+
+    // ۲. حالا پیام جدید مورد نظر را پین می‌کنیم
+    const { error } = await window.supabase
+      .from('messages')
+      .update({ pinned: true })
+      .eq('id', id);
+
+    if (error) throw error;
+    showToast('Message pinned');
+  } catch (err) {
+    showToast('Failed to pin message');
+  }
+}
+
+window.unpinMessage = async function() {
+  if (!pinnedMsgId || !dbReady) return;
+
+  // تغییر وضعیت پین پیام فعلی به false در سوپابیس
+  const { error } = await window.supabase
+    .from('messages')
+    .update({ pinned: false })
+    .eq('id', pinnedMsgId);
+
+  if (error) {
+    showToast('Failed to unpin message');
+    return;
+  }
+
+  showToast('Message unpinned');
+};
+
+// این توابع کاملاً مربوط به ظاهر و انیمیشن‌ها هستند و بدون تغییر باقی مانده‌اند
+window.scrollToPin = function() {
+  if (!pinnedMsgId) return;
+  const el = document.getElementById('msg_' + pinnedMsgId);
+  if (el) { 
+    el.scrollIntoView({behavior:'smooth', block:'center'}); 
+    el.querySelector('.msg-bubble').style.boxShadow = '0 0 0 3px var(--tg-blue)'; 
+    setTimeout(() => { if (el.querySelector('.msg-bubble')) el.querySelector('.msg-bubble').style.boxShadow = ''; }, 1500); 
+  }
+  const m = messages[pinnedMsgId];
+  if (m) { 
+    document.getElementById('pinZoomText').textContent = m.text; 
+    document.getElementById('pinZoomOverlay').classList.remove('hidden'); 
+  }
+};
+
+window.closePinZoom = function() { 
+  document.getElementById('pinZoomOverlay').classList.add('hidden'); 
+};
+
+window.unpinFromCtx = function() { 
+  unpinMessage(); 
+};
+
+
+// ===================================================
+// SELECTION MODE (Supabase Version - Optimized)
+// ===================================================
+function startSelect(id) {
+  isSelectMode = true; selectedMsgs.clear(); selectedMsgs.add(id); selStartId = id;
+  document.getElementById('selectionBar').classList.add('visible'); updateSelectionBar();
+  document.querySelectorAll('.msg-wrapper').forEach(w => w.classList.add('selecting'));
+  document.getElementById('msg_' + id)?.classList.add('selected');
+}
+
+window.clearSelection = function() {
+  isSelectMode = false; selectedMsgs.clear(); selStartId = null;
+  document.getElementById('selectionBar').classList.remove('visible');
+  document.querySelectorAll('.msg-wrapper').forEach(w => { w.classList.remove('selected', 'selecting'); });
+};
+
+function toggleSelect(id) {
+  if (selectedMsgs.has(id)) selectedMsgs.delete(id); else selectedMsgs.add(id);
+  document.getElementById('msg_' + id)?.classList.toggle('selected');
+  updateSelectionBar(); if (!selectedMsgs.size) clearSelection();
+}
+
+function updateSelectionBar() { 
+  document.getElementById('selCount').textContent = selectedMsgs.size + ' selected'; 
+}
+
+window.copySelected = function() {
+  const sorted = Object.entries(messages).filter(([id]) => selectedMsgs.has(id)).sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+  navigator.clipboard?.writeText(sorted.map(([,m]) => `[${m.senderName}]: ${m.text}`).join('\n'));
+  showToast('Copied'); clearSelection();
+};
+
+// حذف دسته‌جمعی بهینه شده با سوپابیس
+window.deleteSelected = async function() {
+  if (selectedMsgs.size === 0) return;
+  const idsToDelete = Array.from(selectedMsgs);
+
+  const { error } = await window.supabase
+    .from('messages')
+    .delete()
+    .in('id', idsToDelete); 
+
+  if (error) {
+    showToast('Failed to delete messages');
+    return;
+  }
+
+  // اضافه شدن این دو خط برای حذف درجا از روی صفحه
+  idsToDelete.forEach(id => delete messages[id]);
+  renderMessages();
+
+  showToast('Messages deleted');
+  clearSelection();
+};
+
+// تابع حذف یک تک پیام (استفاده شده در منوی کلیک راست)
+async function deleteMsg(id) {
+  const { error } = await window.supabase
+    .from('messages')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    showToast('Failed to delete message');
+  } else {
+    // حذف درجا از صفحه بدون نیاز به رفرش
+    delete messages[id];
+    renderMessages();
+  }
+}
+
+// مدیریت اسکرول/لمس برای انتخاب پیام‌ها
+document.getElementById('messagesArea').addEventListener('touchmove', e => {
+  if (!isSelectMode) return;
+  const t = e.touches[0], el = document.elementFromPoint(t.clientX, t.clientY);
+  const wrapper = el?.closest('.msg-wrapper');
+  if (wrapper && wrapper.dataset.msgId) {
+    const id = wrapper.dataset.msgId;
+    if (!selectedMsgs.has(id)) { 
+      selectedMsgs.add(id); 
+      wrapper.classList.add('selected'); 
+      updateSelectionBar(); 
+    }
+  }
+}, {passive:true});
+
+
+// ===================================================
+// SCROLL (بدون نیاز به تغییر - کاملاً سازگار)
+// ===================================================
+function scrollToBottom() { 
+  const area = document.getElementById('messagesArea'); 
+  area.scrollTop = area.scrollHeight; 
+  document.getElementById('scrollBottomBtn').classList.remove('visible'); 
+}
+
+window.onMsgsScroll = function() {
+  const area = document.getElementById('messagesArea');
+  // نمایش دکمه اسکرول به پایین در صورتی که کاربر بیشتر از ۲۰۰ پیکسل به بالا اسکرول کرده باشد
+  document.getElementById('scrollBottomBtn').classList.toggle('visible', (area.scrollHeight - area.scrollTop - area.clientHeight) > 200);
+};
+
+window.scrollToBottom = scrollToBottom;
+
+// ===================================================
+// SETTINGS MODAL (نسخه اصلاح‌شده - بدون بخش پس‌زمینه چت)
+// ===================================================
+window.showSettingsModal = function() {
+  pendingSettings = {...settings};
+  renderSettingsModalBody();
+  document.getElementById('settingsModal').classList.remove('hidden');
+};
+
+window.closeSettingsModal = function() {
+  document.getElementById('settingsModal').classList.add('hidden');
+  pendingSettings = null;
+};
+
+window.saveSettingsModal = function() {
+  settings = {...pendingSettings};
+  localStorage.setItem('mychat_settings', JSON.stringify(settings));
+  applySettings(settings);
+  closeSettingsModal();
+  showToast('Settings saved');
+};
+
+window.resetSettingsModal = function() {
+  pendingSettings = { theme: 'light', bubbleRadius: 18, accentColor: '#2AABEE', notifications: true };
+  renderSettingsModalBody();
+};
+
+function renderSettingsModalBody() {
+  const ps = pendingSettings;
+  const body = document.getElementById('settingsModalBody');
+  body.innerHTML = `
+  <div class="settings-section">
+    <div class="settings-section-label">Theme</div>
+    <div class="settings-card">
+      <div class="toggle-wrap">
+        <span class="toggle-label">Dark Mode</span>
+        <label class="toggle">
+          <input type="checkbox" ${ps.theme==='dark'?'checked':''} onchange="onModalSettingChange('theme', this.checked?'dark':'light')">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-label">Accent Color</div>
+    <div class="settings-card">
+      <div class="color-row">
+        ${[['#2AABEE','Sky Blue'],['#0088CC','Deep Blue'],['#4fae4e','Green'],['#E74C3C','Red'],['#9B59B6','Purple'],['#F39C12','Orange'],['#1ABC9C','Teal']].map(([c,n])=>`
+          <div class="color-swatch ${ps.accentColor===c?'active':''}" style="background:${c}" title="${n}" onclick="onModalSettingChange('accentColor','${c}');renderSettingsModalBody()"></div>
+        `).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-label">Bubble Corners</div>
+    <div class="settings-card">
+      <div class="bubble-preview">
+        <div class="preview-bubble in" id="prevIn" style="border-radius:${ps.bubbleRadius}px ${ps.bubbleRadius}px ${ps.bubbleRadius}px 4px">Hello!</div>
+        <div class="preview-bubble out" id="prevOut" style="border-radius:${ps.bubbleRadius}px ${ps.bubbleRadius}px 4px ${ps.bubbleRadius}px">Hi! 👋</div>
+      </div>
+      <div style="padding:8px 16px 14px;display:flex;align-items:center;gap:12px">
+        <span style="font-size:13px;color:var(--tg-muted)">Sharp</span>
+        <input type="range" min="0" max="24" value="${ps.bubbleRadius}" style="flex:1" oninput="onModalBubbleRadius(this.value)">
+        <span style="font-size:13px;color:var(--tg-muted)">Round</span>
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-label">Account</div>
+    <div class="settings-card">
+      <div class="settings-row"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="settings-row-label">Your ID</span><span class="settings-row-value">${myId}</span></div>
+      <div class="settings-row"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="settings-row-label">Name</span><span class="settings-row-value">${myName}</span></div>
+      <div class="settings-row" style="color:#e53935" onclick="closeSettingsModal();logout()"><svg viewBox="0 0 24 24" stroke="#e53935"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span class="settings-row-label" style="color:#e53935">Log Out</span></div>
+    </div>
+  </div>`;
+}
+
+window.onModalSettingChange = function(key, val) { pendingSettings[key] = val; applySettings(pendingSettings); };
+window.onModalBubbleRadius = function(val) {
+  pendingSettings.bubbleRadius = parseInt(val);
+  document.getElementById('prevIn').style.borderRadius = `${val}px ${val}px ${val}px 4px`;
+  document.getElementById('prevOut').style.borderRadius = `${val}px ${val}px 4px ${val}px`;
+};
+
+document.getElementById('settingsModal').addEventListener('click', function(e) { if (e.target === this) closeSettingsModal(); });
+// ===================================================
+// SETTINGS APPLY (نسخه اصلاح‌شده و سبک‌شده)
+// ===================================================
+function applySettings(s) {
+  document.documentElement.setAttribute('data-theme', s.theme || 'light');
+  document.documentElement.style.setProperty('--tg-blue', s.accentColor || '#2AABEE');
+  document.documentElement.style.setProperty('--tg-dark-blue', darken(s.accentColor || '#2AABEE'));
+  document.documentElement.style.setProperty('--msg-radius', (s.bubbleRadius ?? 18) + 'px');
+  
+  // اعمال پس‌زمینه بر اساس تم فعلی
+  if (document.getElementById('chatScreen') && !document.getElementById('chatScreen').classList.contains('hidden')) {
+    applyBackground(s.theme);
+  }
+}
+
+function applyStoredSettings() { 
+  const s = localStorage.getItem('mychat_settings'); 
+  if (s) settings = {...settings, ...JSON.parse(s)}; 
+  applySettings(settings); 
+}
+
+function applyBackground(theme) {
+  const layer = document.getElementById('bgLayer'); if (!layer) return;
+  layer.innerHTML = '';
+  layer.style.background = '';
+  layer.style.backgroundImage = '';
+  layer.style.backgroundSize = '';
+  layer.style.backgroundPosition = '';
+
+  // 🖼️ استفاده از تصاویر ثابت تو بر اساس اندازه صفحه (موبایل / دسکتاپ)
+  const isMobile = window.innerWidth < 768;
+  const imageUrl = isMobile ? BG_IMAGE_MOBILE : BG_IMAGE_DESKTOP;
+  
+  if (imageUrl && imageUrl.trim() !== '') {
+    layer.style.backgroundImage = `url(${imageUrl})`;
+    layer.style.backgroundSize = 'cover';
+    layer.style.backgroundPosition = 'center';
+    return;
+  }
+
+  // حالت پیش‌فرض: اگر تصویری ست نشده باشد، پس‌زمینه متناسب با تم تاریک یا روشن می‌شود
+  const currentTheme = theme || settings.theme || 'light';
+  if (currentTheme === 'dark') {
+    layer.style.background = '#1a1f2e';
+  } else {
+    layer.style.background = 'var(--tg-bg)';
+  }
+}
+
+// ===================================================
+// SCREEN NAVIGATION (Supabase Version)
+// ===================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+window.goHome = function() {
+  stopTypingSignal();
+  
+  // قطع کردن کانال رئال‌تایم پیام‌ها در سوپابیس
+  if (messagesListener) { 
+    window.supabase.removeChannel(messagesListener); 
+    messagesListener = null; 
+  }
+  
+  // قطع کردن کانال رئال‌تایم وضعیت آنلاین/آفلاین (Presence) در سوپابیس
+  if (peerPresenceListener) { 
+    window.supabase.removeChannel(peerPresenceListener); 
+    peerPresenceListener = null; 
+  }
+  
+  // ریست کردن متغیرهای محلی چت
+  peerId = ''; peerName = ''; messages = {}; selectedMsgs.clear(); 
+  isSelectMode = false; replyTo = null; pinnedMsgId = null;
+  
+  showScreen('homeScreen'); 
+  loadChatList();
+};
+
+// تنظیم وضعیت آفلاین در دیتابیس
+async function setUserOffline() {
+  if (!myId) return;
+  
+  try {
+    await supabase
+      .from('presence')
+      .update({ 
+        online: false, 
+        last_seen: new Date().toISOString() 
+      })
+      .eq('id', myId);
+  } catch (err) {
+    console.error('Error setting offline:', err);
+  }
+}
+
+window.logout = function() {
+  if (confirm('Log out?')) {
+    stopTypingSignal();
+    
+    // قطع دسترسی به تمام کانال‌های فعال قبل از خروج
+    if (messagesListener) { supabase.removeChannel(messagesListener); messagesListener = null; }
+    if (peerPresenceListener) { supabase.removeChannel(peerPresenceListener); peerPresenceListener = null; }
+    
+    // تنظیم وضعیت آفلاین در دیتابیس
+    setUserOffline();
+    
+    // پاک کردن اطلاعات هویتی کاربر از مرورگر
+    localStorage.removeItem('mychat_identity');
+    myId = ''; myName = '';
+    
+    showScreen('loginScreen');
+  }
+};
+
+// ===================================================
+// HELPERS (کاملاً سازگار با یک اصلاح ریز در انتهای کد)
+// ===================================================
+function escHtml(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+function formatTime(d) { return d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}); }
+function formatRelTime(ts) { const d=Date.now()-ts; if(d<60000)return'just now'; if(d<3600000)return Math.floor(d/60000)+'m ago'; if(d<86400000)return Math.floor(d/3600000)+'h ago'; return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+function avatarColor(id) { const c=['#2AABEE','#4fae4e','#e53935','#9B59B6','#F39C12','#1ABC9C','#E91E63','#00BCD4']; let h=0; for(const ch of id)h=(h*31+ch.charCodeAt(0))%c.length; return c[h]; }
+function initials(n) { return n ? n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||n[0].toUpperCase() : '?'; }
+function darken(hex) { let n=parseInt(hex.replace('#',''),16); return `rgb(${Math.max(0,(n>>16)-30)},${Math.max(0,((n>>8)&0xff)-30)},${Math.max(0,(n&0xff)-30)})`; }
+function showToast(m) { const t=document.createElement('div'); t.className='toast'; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),1900); }
+
+document.addEventListener('click', e => { if(!e.target.closest('.ctx-menu'))document.getElementById('ctxMenu').classList.add('hidden'); });
+
+// مدیریت کیبورد در موبایل
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', () => {
+    const inputArea = document.getElementById('inputArea');
+    if (!inputArea) return;
+    const o = window.innerHeight - window.visualViewport.height;
+    if (o > 0) {
+      inputArea.style.paddingBottom = (o + 8) + 'px';
+    } else {
+      inputArea.style.paddingBottom = '';
+    }
+  });
+}
+
+// به‌روزرسانی پس‌زمینه هنگام تغییر اندازه پنجره (هماهنگ شده با تم جدید)
+window.addEventListener('resize', () => {
+  const chatScreen = document.getElementById('chatScreen');
+  if (chatScreen && !chatScreen.classList.contains('hidden')) {
+    applyBackground(settings.theme); // آپدیت شد
+  }
+});
+
+// تنظیم event listener برای خروج ایمن هنگام بستن صفحه
+window.addEventListener('beforeunload', async () => {
+  if (myId) {
+    await setUserOffline();
+  }
+});
+
+// تنظیم event listener برای تغییر وضعیت نمایش (مثل جابه‌جایی تب)
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden && myId) {
+    // صفحه مخفی است - کاربر رفته
+    await setUserOffline();
+  } else if (!document.hidden && myId) {
+    // صفحه دوباره فعال شد - کاربر برگشت
+    await registerPresence();
+  }
+});
+
+applyStoredSettings();
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
