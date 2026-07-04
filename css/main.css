@@ -1,0 +1,187 @@
+@font-face {
+    font-family: 'EnFont';
+    src: url('../Fonts/A/Montserrat-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'EnFontB';
+    src: url('../Fonts/A/Montserrat-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'FiraCode';
+    src: url('../Fonts/FiraCode/FiraCode-Bold.ttf');
+}
+
+
+
+body{
+    display: grid;
+    justify-content: center;
+    align-items:  center;
+    overflow-x: hidden;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+
+
+.container-grid-main{
+    display: grid;
+    align-items: center;
+    grid-template-columns: repeat(2, 1fr);
+    box-shadow: 0px 0px 21px 7px #9f94e759;
+    border: 2px solid #9f94e7e0;
+    background: #645ba065;
+    backdrop-filter: blur(5px);
+    border-radius: 40px;
+    padding: 20px;
+    gap: 5px;
+    margin: 0px 15px;
+    
+    transition: all 0.4s ease-in-out;
+}
+
+
+
+
+.item-grid{
+    justify-content: center;
+    display: grid;
+    align-items: center;
+    margin: 10px;
+    background: #2c255794;
+    backdrop-filter: blur(2px);
+    border-radius: 30px;
+    padding: 15px 25px;
+    padding-top: 20px;
+    gap: 15px;
+    color: #cac2ff;
+    text-align: center;
+    transition: all 0.4s ease;
+    box-shadow: 0px 0px 21px 7px #2c255794;
+}
+
+.item-grid:hover{
+    background: #2c2557b7;
+    
+}
+
+a{
+    text-decoration: none;
+    border: none;
+    outline: none;
+    font-family: EnFontB;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+button, button:hover, input[type="button"]{
+    cursor: url('../img/cursorMouse/A2.png'), auto;
+}
+
+
+input[type="text"]:hover,
+input[type="password"]:hover{
+    cursor: url('../img/cursorMouse/type.png'), auto;
+} 
+
+@media (max-width: 721px) {
+
+    body{
+        background: #9189ce;
+        background-image: url('../img/background/bg2.jpg');
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+    }
+
+    
+    .pc-setting{
+        display: none;
+    }
+
+}
+
+
+
+@media (max-width: 980px) {
+
+
+
+.container-grid-main{
+
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px;
+    gap: 5px;
+    margin: 0px 15px;
+
+    transition: all 0.5s ease-in-out;
+}
+
+
+.item-grid{
+    margin: 10px;
+    padding: 15px 25px;
+    padding-top: 20px;
+    gap: 15px;
+    transition: all 0.4s ease-in-out;
+}
+
+.img-movie{
+    width: 90px;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+.img-date{
+    width: 90px;
+    height: auto;
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+
+}
+
+
+
+@media (max-width: 721px) {
+
+
+
+.container-grid-main{
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px;
+    gap: 5px;
+    margin: 0px 25px;
+
+    transition: all 0.5s ease-in-out;
+}
+
+
+}
